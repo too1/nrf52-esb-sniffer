@@ -49,6 +49,8 @@
 #include "nrf_error.h"
 #include "boards.h"
 
+#include "snf_transport_app_uart.h"
+
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
@@ -133,6 +135,10 @@ uint32_t esb_init( void )
     return err_code;
 }
 
+static void sniffer_init(void)
+{
+    snf_trans_app_uart_init(0);
+}
 
 int main(void)
 {
@@ -158,6 +164,8 @@ int main(void)
 
     NRF_LOG_INFO("Enhanced ShockBurst Receiver Example started.");
 
+    sniffer_init();
+
     err_code = nrf_esb_start_rx();
     APP_ERROR_CHECK(err_code);
 
@@ -172,7 +180,6 @@ int main(void)
             counter--;
         }
         __WFE();
-        
     }
 }
 /*lint -restore */
