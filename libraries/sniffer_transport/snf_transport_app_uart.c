@@ -56,7 +56,7 @@ uint32_t snf_trans_app_uart_init(snf_trans_baseconfig_t *config)
                                           .cts_pin_no = CTS_PIN_NUMBER,
                                           .flow_control = HWFC,
                                           .use_parity = 0,
-                                          .baud_rate = UART_BAUDRATE_BAUDRATE_Baud115200};
+                                          .baud_rate = UART_BAUDRATE_BAUDRATE_Baud460800};
     APP_UART_FIFO_INIT(&uart_params, 256, 256, uart_event_handler, 6, err_code);
 
     return err_code;
