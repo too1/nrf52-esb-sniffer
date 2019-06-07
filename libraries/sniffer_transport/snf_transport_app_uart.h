@@ -37,6 +37,6 @@ uint32_t snf_trans_app_uart_init(snf_trans_baseconfig_t *config);
 
 uint32_t snf_trans_sniffer_ready(void);
 
-uint32_t snf_trans_on_rx_packet_received(nrf_esb_payload_t *packet);
+uint32_t snf_trans_on_rx_packet_received(nrf_esb_payload_t *packet, uint64_t time);
 
 #endif

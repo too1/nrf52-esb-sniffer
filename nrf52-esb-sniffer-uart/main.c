@@ -96,7 +96,7 @@ static void app_sniffer_callback(app_sniffer_event_t *event)
     switch(event->type)
     {
         case APP_SNIFFER_EVT_TYPE_RX_PACKET_RECEIVED:
-            snf_trans_on_rx_packet_received(event->rf_payload);
+            snf_trans_on_rx_packet_received(event->rf_payload, event->time_stamp);
             break;
     }
 }

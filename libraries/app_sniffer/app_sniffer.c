@@ -13,14 +13,36 @@ static uint32_t esb_default_init(void);
 static app_sniffer_callback_t   m_callback = 0;
 static app_sniffer_event_t      m_event;
 nrf_esb_payload_t rx_payload;
-static bool                     m_esb_initialized = false;
 
+static bool                     m_esb_initialized = false;
+static uint32_t                 m_timer_overflow_counter;
+
+static void reset_timestamp_timer(void)
+{
+    SNF_RX_TIMESTAMP_TIMER->TASKS_STOP = 1;
+    SNF_RX_TIMESTAMP_TIMER->TASKS_CLEAR = 1;
+    m_timer_overflow_counter = 0;
+    SNF_RX_TIMESTAMP_TIMER->TASKS_START = 1;
+}
 
 uint32_t app_sniffer_init(app_sniffer_config_t *config)
 {
     uint32_t err_code = NRF_SUCCESS;
     
     m_callback = config->event_handler;
+
+    SNF_RX_TIMESTAMP_TIMER->TASKS_STOP = 1;
+    SNF_RX_TIMESTAMP_TIMER->PRESCALER = 4;
+    SNF_RX_TIMESTAMP_TIMER->BITMODE = TIMER_BITMODE_BITMODE_32Bit;
+    SNF_RX_TIMESTAMP_TIMER->CC[0] = SNF_RX_TIMESTAMP_RELOAD_INTERVAL;
+    SNF_RX_TIMESTAMP_TIMER->INTENSET = TIMER_INTENSET_COMPARE0_Msk;
+    
+    NRF_PPI->CH[SNF_PPI_RX_TIMESTAMP_CH].EEP = (uint32_t)&NRF_RADIO->EVENTS_ADDRESS;
+    NRF_PPI->CH[SNF_PPI_RX_TIMESTAMP_CH].TEP = (uint32_t)&SNF_RX_TIMESTAMP_TIMER->TASKS_CAPTURE[1];
+    NRF_PPI->CHENSET = 1 << SNF_PPI_RX_TIMESTAMP_CH;
+    
+    NVIC_SetPriority(SNF_RX_TIMESTAMP_TIMER_IRQn, 2);
+    NVIC_EnableIRQ(SNF_RX_TIMESTAMP_TIMER_IRQn);
 
     //err_code = esb_default_init();
     return err_code;
@@ -42,6 +64,7 @@ static void nrf_esb_event_handler(nrf_esb_evt_t const * p_event)
             {
                 NRF_LOG_DEBUG("Receiving packet: %02x", rx_payload.data[1]);
                 m_event.type = APP_SNIFFER_EVT_TYPE_RX_PACKET_RECEIVED;
+                m_event.time_stamp = m_timer_overflow_counter * SNF_RX_TIMESTAMP_RELOAD_INTERVAL + SNF_RX_TIMESTAMP_TIMER->CC[1];
                 m_event.rf_payload = &rx_payload;
                 if(m_callback) m_callback(&m_event);
             }
@@ -116,6 +139,11 @@ uint32_t app_sniffer_configure(snf_trans_sniffer_configuration_t *config)
 
 uint32_t app_sniffer_start_rx(void)
 {
+    if(!m_esb_initialized)
+    {
+        esb_default_init();
+    }
+    reset_timestamp_timer();
     uint32_t err_code = nrf_esb_start_rx();
     return err_code;
 }
@@ -124,4 +152,14 @@ uint32_t app_sniffer_stop_rx(void)
 {
     uint32_t err_code = nrf_esb_stop_rx();
     return err_code;
+}
+
+void SNF_RX_TIMESTAMP_TIMER_IRQHandler(void)
+{
+    if(SNF_RX_TIMESTAMP_TIMER->EVENTS_COMPARE[0])
+    {
+        SNF_RX_TIMESTAMP_TIMER->EVENTS_COMPARE[0] = 0;
+
+        m_timer_overflow_counter++;
+    }
 }

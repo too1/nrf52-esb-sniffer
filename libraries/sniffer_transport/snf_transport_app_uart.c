@@ -101,14 +101,16 @@ uint32_t snf_trans_sniffer_ready(void)
     display_command_list();
 }
 
-uint32_t snf_trans_on_rx_packet_received(nrf_esb_payload_t *packet)
+uint32_t snf_trans_on_rx_packet_received(nrf_esb_payload_t *packet, uint64_t time)
 {
-    printf("RX L:%i\tP:%i\tPID:%i\t", packet->length, packet->pipe, packet->pid);
+    static uint64_t prev_time = 0;
+    printf("RX T:%i.%.6i\tDT:%i\tL:%i\tP:%i\tPID:%i\t", (uint32_t)(time / 1000000), (uint32_t)(time % 1000000), (uint32_t)(time - prev_time), packet->length, packet->pipe, packet->pid);
     for(int i = 0; i < packet->length; i++)
     {
         printf("0x%.2X ", packet->data[i]);
     }
     printf("\r\n");
+    prev_time = time;
 }
 
 // Internal functions
