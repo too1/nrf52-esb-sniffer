@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "app_sniffer_types.h"
 #include "nrf_esb.h"
+#include "snf_transport.h"
 
 typedef enum {APP_SNIFFER_EVT_TYPE_RX_PACKET_RECEIVED} app_sniffer_evt_type_t;
 
@@ -22,6 +23,8 @@ typedef struct
 } app_sniffer_config_t;
 
 uint32_t app_sniffer_init(app_sniffer_config_t *config);
+
+uint32_t app_sniffer_configure(snf_trans_sniffer_configuration_t *config);
 
 uint32_t app_sniffer_start_rx(void);
 

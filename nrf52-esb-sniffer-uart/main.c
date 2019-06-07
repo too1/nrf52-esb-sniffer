@@ -74,6 +74,10 @@ static void sniffer_transport_callback(snf_trans_event_t *event)
 {
     switch(event->type)
     {
+        case SNF_TRANS_EVT_SET_CONFIGURATION:
+            app_sniffer_configure(&event->sniffer_config);
+            break;
+
         case SNF_TRANS_EVT_START_RX:
             app_sniffer_start_rx();
             break;

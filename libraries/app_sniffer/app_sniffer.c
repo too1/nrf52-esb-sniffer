@@ -8,11 +8,12 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 
-static uint32_t esb_init(void);
+static uint32_t esb_default_init(void);
 
 static app_sniffer_callback_t   m_callback = 0;
 static app_sniffer_event_t      m_event;
 nrf_esb_payload_t rx_payload;
+static bool                     m_esb_initialized = false;
 
 
 uint32_t app_sniffer_init(app_sniffer_config_t *config)
@@ -21,7 +22,7 @@ uint32_t app_sniffer_init(app_sniffer_config_t *config)
     
     m_callback = config->event_handler;
 
-    err_code = esb_init();
+    //err_code = esb_default_init();
     return err_code;
 }
 
@@ -48,7 +49,7 @@ static void nrf_esb_event_handler(nrf_esb_evt_t const * p_event)
     }
 }
 
-static uint32_t esb_init(void)
+static uint32_t esb_default_init(void)
 {
     uint32_t err_code;
     uint8_t base_addr_0[4] = {0xE7, 0xE7, 0xE7, 0xE7};
@@ -73,6 +74,42 @@ static uint32_t esb_init(void)
 
     err_code = nrf_esb_set_prefixes(addr_prefix, 8);
     VERIFY_SUCCESS(err_code);
+
+    m_esb_initialized = true;
+
+    return err_code;
+}
+
+uint32_t app_sniffer_configure(snf_trans_sniffer_configuration_t *config)
+{
+    uint32_t err_code;
+    config->esb_config.mode                 = NRF_ESB_MODE_PRX;
+    config->esb_config.event_handler        = nrf_esb_event_handler;
+    config->esb_config.selective_auto_ack   = false;
+    config->esb_config.radio_irq_priority   = 1;
+    config->esb_config.event_irq_priority   = 2; 
+    config->esb_config.retransmit_delay     = 250;
+    config->esb_config.retransmit_count     = 1;
+
+    if(m_esb_initialized)
+    {
+        err_code = nrf_esb_disable();
+        VERIFY_SUCCESS(err_code);
+    }
+
+    err_code = nrf_esb_init(&config->esb_config);
+    VERIFY_SUCCESS(err_code);
+
+    err_code = nrf_esb_set_rf_channel(config->rf_channel);
+    VERIFY_SUCCESS(err_code);
+
+    err_code = nrf_esb_set_base_address_0(&config->address[1]);
+    VERIFY_SUCCESS(err_code);
+
+    err_code = nrf_esb_set_prefixes(&config->address[0], 1);
+    VERIFY_SUCCESS(err_code);
+
+    m_esb_initialized = true;
 
     return err_code;
 }

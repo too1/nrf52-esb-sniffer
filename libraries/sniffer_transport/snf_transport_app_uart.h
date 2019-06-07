@@ -4,6 +4,15 @@
 #include "snf_transport.h"
 #include "nrf_esb.h"
 
+#define KEY_BACKSPACE   0x08 
+#define KEY_ENTER       0x0D
+#define KEY_ARROW_PRE1  0x1B
+#define KEY_ARROW_PRE2  0x5B
+#define KEY_ARROW_UP    0x41
+#define KEY_ARROW_DOWN  0x42
+#define KEY_ARROW_RIGHT 0x43
+#define KEY_ARROW_LEFT  0x44
+
 typedef struct
 {
     char cmd_byte;
