@@ -44,7 +44,7 @@ uint32_t app_sniffer_init(app_sniffer_config_t *config)
     NVIC_SetPriority(SNF_RX_TIMESTAMP_TIMER_IRQn, 2);
     NVIC_EnableIRQ(SNF_RX_TIMESTAMP_TIMER_IRQn);
 
-    //err_code = esb_default_init();
+    err_code = esb_default_init();
     return err_code;
 }
 
@@ -139,10 +139,6 @@ uint32_t app_sniffer_configure(snf_trans_sniffer_configuration_t *config)
 
 uint32_t app_sniffer_start_rx(void)
 {
-    if(!m_esb_initialized)
-    {
-        esb_default_init();
-    }
     reset_timestamp_timer();
     uint32_t err_code = nrf_esb_start_rx();
     return err_code;

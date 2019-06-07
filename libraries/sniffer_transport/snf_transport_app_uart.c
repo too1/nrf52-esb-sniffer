@@ -101,9 +101,9 @@ uint32_t snf_trans_sniffer_ready(void)
     display_command_list();
 }
 
+static uint64_t prev_time;
 uint32_t snf_trans_on_rx_packet_received(nrf_esb_payload_t *packet, uint64_t time)
 {
-    static uint64_t prev_time = 0;
     printf("RX T:%i.%.6i\tDT:%i\tL:%i\tP:%i\tPID:%i\t", (uint32_t)(time / 1000000), (uint32_t)(time % 1000000), (uint32_t)(time - prev_time), packet->length, packet->pipe, packet->pid);
     for(int i = 0; i < packet->length; i++)
     {
@@ -485,6 +485,7 @@ static void default_input_parser(uint8_t byte)
 static void start_rx(void)
 {
     m_rx_started = true;
+    prev_time = 0;
     printf("Starting RX\r\n");
     SNF_TRANS_CALLBACK_RUN(SNF_TRANS_EVT_START_RX, m_callback_event, m_snf_trans_event_handler);
 }
