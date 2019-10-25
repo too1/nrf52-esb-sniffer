@@ -6,10 +6,13 @@ A small project to set up an nRF52 device as an ESB sniffer, allowing you to con
 
 Current implementation uses a UART terminal interface, but the architecture is designed to allow different transport/control layers.
 
-Default UART settings:
-Baudrate:      460800
-Parity:        No
-Flow control:  Hardware flow control
+**Default UART settings:**
+
+Baudrate     - 460800
+
+Parity       - No
+
+Flow control - Hardware flow control
 
 ### Supported hardware:
 - nRF52DK
